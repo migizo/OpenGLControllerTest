@@ -1,11 +1,12 @@
+uniform float uPan;
+uniform float uVolume;
 uniform float uTime;
-uniform vec2 uMouseNorm;
 uniform vec2 uResolution;
 
 void main() {
   float w = 0.0;
   vec2 uv = gl_FragCoord.xy / uResolution.xy;
-  vec2 mouse = vec2(uMouseNorm.x, 1.0 - uMouseNorm.y);
+  vec2 mouse = vec2((uPan + 1.0) * 0.5, uVolume);
 
   // line
   float lineWidth = 0.01;

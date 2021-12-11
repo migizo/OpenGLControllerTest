@@ -49,7 +49,9 @@ OpenGLSimpleUniform::OpenGLSimpleUniform(juce::AudioProcessorValueTreeState& _vt
     }
     
     // shaderのソースコード読み込み
-    fragmentShaderFile = juce::File(resourcePath + "simpleUniform.frag");
+//    fragmentShaderFile = juce::File(resourcePath + "simpleUniform.frag");
+    fragmentShaderFile = juce::File(resourcePath + "simpleUniformRaymarching.frag");
+    
     fragmentString = fragmentShaderFile.loadFileAsString();
     
     // リアルタイム更新のために最後にアクセスした時間と変更した時間を取得
@@ -87,12 +89,13 @@ void OpenGLSimpleUniform::paint (juce::Graphics& g)
     {
         shader->onShaderActivated = [&](juce::OpenGLShaderProgram& p)
         {
-            
-            p.setUniform("uMouseNorm", mouseRel.x / getWidth(), mouseRel.y / getHeight());
-            p.setUniform("uResolution", bounds.getWidth(), bounds.getHeight());
+            p.setUniform("uPan", vts.getRawParameterValue(PARAM_PAN)->load());
+            p.setUniform("uVolume", vts.getRawParameterValue(PARAM_VOL)->load());
             
             GLfloat uTime = (float)juce::Time::getMillisecondCounterHiRes() * 0.001f;
             p.setUniform("uTime", uTime);
+            
+            p.setUniform("uResolution", bounds.getWidth(), bounds.getHeight());
         };
 
         shader->fillRect (g.getInternalContext(), g.getClipBounds());
@@ -106,9 +109,7 @@ void OpenGLSimpleUniform::mouseMove(const juce::MouseEvent& event) {
     const auto& mappedPan = juce::jmap((float)mouseRel.x / (float)getWidth(), -1.0f, 1.0f);
     vts.getRawParameterValue(PARAM_PAN)->store(juce::jmin(1.0f, juce::jmax(-1.0f, mappedPan)));
     
-    auto volRange = vts.getParameterRange(PARAM_VOL);
-    const auto& mappedVol= juce::jmap((float)mouseRel.y / (float)getHeight(), 0.0f, 0.1f);
-    vts.getRawParameterValue(PARAM_VOL)->store(juce::jmin(1.0f, juce::jmax(0.0f, mappedVol)));
+    vts.getRawParameterValue(PARAM_VOL)->store(1.0f - juce::jmin(1.0f, juce::jmax(0.0f, (float)mouseRel.y / (float)getHeight())));
 }
 
 //------------------------------------------------------------------------------
